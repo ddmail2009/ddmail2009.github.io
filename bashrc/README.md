@@ -1,7 +1,7 @@
 <h1 align='center'>Bashrc</h1>
 
 My Curated list of useful command for bashrc snippets that will make your work easier.
-Run *** to replace your existing bashrc and bash_aliases with the updated config.
+Run install.py to replace your existing bashrc and bash_aliases with the updated config.
 
 ##### Inspiration
 
@@ -14,6 +14,7 @@ This collection is insipred by [awesome-barshrc](https://github.com/aashutoshrat
     - [Colors Definition](#colors-definition)
     - [C/C++ & Make Compile And Run](#cpp-make-compile-and-run)
     - [Git Related Commands](#git-related-commands)
+    - [Useful bash alias & function](#useful-bash-alias--function)
 
 ## Default Bashrc
 ##### Settings and exports
@@ -66,7 +67,6 @@ export LESS_TERMCAP_ue=$'\E[0m'            # end underline
 
 ##### Bash Prompt
 ```sh
-
 function __setprompt {
     local LAST_COMMAND=$?
     local COLOR_PROMPT=yes
@@ -125,24 +125,34 @@ function __setprompt {
         fi
         
         # Username and Host
-        PS1+="[${Color_BBlack}${Color_Green}\u@\H${Color_BBlack}-"
+        PS1+="${Color_BBlack}[${Color_Green}\u@\H${Color_BBlack}] "
         # Jobs
-        PS1+="${Color_BBlack}${Color_Blue}\j${Color_BBlack}] "
+        # PS1+="-${Color_BBlack}${Color_Blue}\j${Color_BBlack}] "
 
         # Date & Time
         PS1+="${Color_BBlack}${Color_Cyan}$(date +%a) $(date +%b-'%-d')" # Date
-        PS1+="${Color_BBlack} $(date +'%-I':%M:%S%P)${Color_BBlack}" # Time
+        PS1+=" $(date +'%-I':%M:%S%P)${Color_BBlack}" # Time
+
+        # Git branch
+        local gitPS1=$(__git_ps1)
+        if [[ ! -z ${gitPS1} ]]; then
+            local gitColor=${Color_Cyan}
+            if ! git diff --no-ext-diff --cached --quiet; then
+                # have staged file
+                gitColor=${Color_BCyan}
+            fi
+            if ! git diff --no-ext-diff --quiet; then
+                # Have unstaged file
+                gitColor=${Color_BRed}
+            fi
+            PS1+="${gitColor}${gitPS1}${Color_BBlack}"
+        fi
 
         PS1+="\n"
 
         # Current Directory
         PS1+="${Color_BGreen}\$PWD${Color_BBlack}"
 
-        # Git branch
-        local gitBranch=$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/')
-        if [ ! -z ${gitBranch} ]; then
-            PS1+="${Color_BBlack}${Color_BCyan} (${gitBranch})${Color_BBlack}"
-        fi
 
         if [[ $EUID -ne 0 ]]; then
             PS1+=" ${Color_Green}\$${Color_Off} " # Normal user
@@ -152,6 +162,15 @@ function __setprompt {
     fi
 }
 export PROMPT_COMMAND='__setprompt'
+
+# If set, show unstaged (*) and staged (+) next to the branch name.
+export GIT_PS1_SHOWDIRTYSTATE=1
+
+# If set, show stashed ($) next to the branch name.
+export GIT_PS1_SHOWSTASHSTATE=1
+
+# Show upstream name and versions ahead/behind upstream.
+export GIT_PS1_SHOWUPSTREAM="verbose name"
 ```
 
 ##### Bash history
@@ -294,10 +313,10 @@ alias git-pretty-print='git log --online --pretty --graph'
 ```
 
 ## Useful bash alias & function
-
 ##### Alias
 ```sh
 # General command
+alias ls='ls --color=always'
 alias l='ls -CF'
 alias la='ls -AlhF'
 alias ll='ls -alhFt'
