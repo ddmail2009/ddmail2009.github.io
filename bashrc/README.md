@@ -25,9 +25,19 @@ case $- in
       *) return;;
 esac
 
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+    . /etc/bashrc
+fi
+
 # Alias/Function definitions.
 if [ -f ~/.bash_aliases ]; then
     . ~/.bash_aliases
+fi
+
+# Device specific configs.
+if [ -f ~/.bash_config ]; then
+    . ~/.bash_config
 fi
 
 # enable programmable completion features.
@@ -44,6 +54,9 @@ shopt -s checkwinsize
 
 # let pattern "**" used in a pathname expansion context will match all files and zero or more directories and subdirectories.
 shopt -s globstar
+
+# Set Default permission mask
+umask 022
 
 # make less more friendly for non-text input files, see lesspipe(1)
 [ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
@@ -84,7 +97,6 @@ function __setprompt {
     if [ "${COLOR_PROMPT}" != yes ]; then 
         PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "
     else
-        # PS1="${debian_chroot:+($debian_chroot)}${Color_Green}\u@\h${Color_Off}:${Color_BBlue}\w${Color_Off}\$ "
         PS1=""
         if [[ ${LAST_COMMAND} != 0 ]]; then
             PS1="${Color_BBlack}(${Color_BRed}ERROR)-(${Color_Red}Exit Code ${Color_BRed}${LAST_COMMAND}${Color_BBlack})-(${Color_Red}"
@@ -125,13 +137,14 @@ function __setprompt {
         fi
         
         # Username and Host
-        PS1+="${Color_BBlack}[${Color_Green}\u@\H${Color_BBlack}] "
-        # Jobs
-        # PS1+="-${Color_BBlack}${Color_Blue}\j${Color_BBlack}] "
+        PS1+="${Color_BBlue}\u@\h: "
+        
+        # Current Directory
+        PS1+="${Color_BGreen}\$PWD${Color_Off}"
 
         # Date & Time
-        PS1+="${Color_BBlack}${Color_Cyan}$(date +%a) $(date +%b-'%-d')" # Date
-        PS1+=" $(date +'%-I':%M:%S%P)${Color_BBlack}" # Time
+        # PS1+="${Color_BBlack}${Color_BCyan}$(date +%a) $(date +%b-'%-d')" # Date
+        # PS1+=" $(date +'%-I':%M:%S%P)${Color_BBlack}" # Time
 
         # Git branch
         local gitPS1=$(__git_ps1)
@@ -148,16 +161,13 @@ function __setprompt {
             PS1+="${gitColor}${gitPS1}${Color_BBlack}"
         fi
 
+
         PS1+="\n"
 
-        # Current Directory
-        PS1+="${Color_BGreen}\$PWD${Color_BBlack}"
-
-
         if [[ $EUID -ne 0 ]]; then
-            PS1+=" ${Color_Green}\$${Color_Off} " # Normal user
+            PS1+="${Color_Yellow}\$${Color_Off} " # Normal user
         else
-            PS1+=" ${Color_Red}\$${Color_Off} " # Root user
+            PS1+="${Color_Red}\$${Color_Off} " # Root user
         fi
     fi
 }
@@ -315,6 +325,11 @@ alias git-pretty-print='git log --online --pretty --graph'
 ## Useful bash alias & function
 ##### Alias
 ```sh
+
+# Those Environmental Variable controls `ls` colors
+export CLICOLOR=1
+export LSCOLORS=ExFxCxDxBxegedabagacad
+
 # General command
 alias ls='ls --color=always'
 alias l='ls -CF'
@@ -335,6 +350,9 @@ alias ps='ps auxf'
 
 # Make less escape ASI 'color' escape sequences
 alias less='less -R'
+
+# make cd resolve symbolic link
+alias cd='cd -P'
 
 # cd into the old directory
 alias bd='cd "$OLDPWD"'
