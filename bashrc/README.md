@@ -94,7 +94,7 @@ function __setprompt {
         COLOR_PROMPT=
     fi
 
-    if [ "${COLOR_PROMPT}" != yes ]; then 
+    if [ "${COLOR_PROMPT}" != yes ]; then
         PS1="${debian_chroot:+($debian_chroot)}\u@\h:\w\$ "
     else
         PS1=""
@@ -135,12 +135,12 @@ function __setprompt {
             fi
             PS1+="${Color_BBlack})${Color_Off}\n"
         fi
-        
+
         # Username and Host
         PS1+="${Color_BBlue}\u@\h: "
-        
+
         # Current Directory
-        PS1+="${Color_BGreen}\$PWD${Color_Off}"
+        PS1+="${Color_BGreen}\w${Color_Off}"
 
         # Date & Time
         # PS1+="${Color_BBlack}${Color_BCyan}$(date +%a) $(date +%b-'%-d')" # Date
